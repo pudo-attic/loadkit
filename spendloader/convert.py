@@ -2,6 +2,7 @@ import os
 import json
 import tempfile
 import random
+import logging
 from urllib import urlopen
 
 from slugify import slugify
@@ -9,7 +10,9 @@ from messytables import any_tableset, type_guess
 from messytables import types_processor, headers_guess
 from messytables import headers_processor, offset_processor
 
-TABLE_RESOURCE = 'table.json'
+from spendloader.table import store_records
+
+log = logging.getLogger(__name__)
 
 
 def get_fileobj(package):
@@ -17,6 +20,7 @@ def get_fileobj(package):
     # handles, so we're doing it via plain old HTTP.
     package.source.make_public()
     url = package.source.generate_url(expires_in=0, query_auth=False)
+    log.info("Attempting to parse %r (%s) source data...", package, url)
     return urlopen(url)
 
 
@@ -101,32 +105,24 @@ def random_sample(value, field, row, num=10):
     j = random.randint(0, row)
     if j < (num - 1):
         field['samples'][j] = value
-
-
-def get_table(package):
-    return package.resource(TABLE_RESOURCE)
     
 
 def convert_package(package):
     """ Store a parsed version of the package resource. """
-    key = get_table(package)
-    output = tempfile.NamedTemporaryFile(suffix='.json')
-    
-    fields = None
-    for i, row in enumerate(package_rows(package)):
-        if fields is None:
-            fields = generate_field_spec(row)
+    with store_records(package) as save:
+        fields = None
+        for i, row in enumerate(package_rows(package)):
+            if fields is None:
+                fields = generate_field_spec(row)
 
-        data = {}
-        for cell, field in zip(row, fields):
-            data[field['name']] = cell.value
-            random_sample(cell.value, field, i)
+            data = {}
+            for cell, field in zip(row, fields):
+                data[field['name']] = cell.value
+                random_sample(cell.value, field, i)
 
-        output.write(json.dumps(data) + '\n')
+            save(data)
 
-    package.manifest['fields'] = fields
-    package.save()
-
-    output.seek(0)
-    key.set_contents_from_file(output)
-    output.close()
+        log.info("Converted %s rows with %s columns.", i, len(fields))
+        package.manifest['fields'] = fields
+        package.manifest['num_records'] = i
+        package.save()

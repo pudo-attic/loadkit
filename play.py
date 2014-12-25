@@ -1,7 +1,10 @@
 import os
+import logging
 
 from boto.s3.connection import S3Connection, S3ResponseError
 from boto.s3.connection import Location
+
+logging.basicConfig(level=logging.INFO)
 
 LOCATION = Location.EU
 
@@ -20,6 +23,7 @@ except S3ResponseError, se:
 
 from spendloader import PackageIndex
 from spendloader.convert import convert_package
+from spendloader.database import database_load
 
 index = PackageIndex(bucket)
 
@@ -38,3 +42,4 @@ with open(PATH, 'rb') as fh:
     package = index.create(source_file=PATH)
     package.source.set_contents_from_file(fh)
     convert_package(package)
+    database_load(None, package)
