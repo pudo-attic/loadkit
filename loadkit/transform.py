@@ -109,9 +109,16 @@ def resource_to_table(resource, name):
 
             data = {}
             for cell, field in zip(row, fields):
-                data[field['name']] = cell.value
-                random_sample(cell.value, field, i)
+                value = cell.value
+                if isinstance(value, basestring) and not len(value.strip()):
+                    value = None
+                data[field['name']] = value
+                random_sample(value, field, i)
 
+            check_empty = set(data.values())
+            if None in check_empty and len(check_empty) == 1:
+                continue
+            
             save(data)
 
     log.info("Converted %s rows with %s columns.", i, len(fields))

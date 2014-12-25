@@ -1,5 +1,6 @@
 import boto
 from moto import mock_s3
+from datetime import datetime
 
 from loadkit import PackageIndex, extract, transform
 from loadkit.tests.util import CSV_FIXTURE, CSV_URL
@@ -57,6 +58,9 @@ def test_parse_with_dates():
     artifact = transform.resource_to_table(res, 'table')
 
     assert artifact.name == 'table'
-    assert False, list(artifact.records())
+    recs = list(artifact.records())
+    assert len(recs) == 23, len(recs)
+    assert isinstance(recs[0]['transaction_date'], datetime)
+
 
 
