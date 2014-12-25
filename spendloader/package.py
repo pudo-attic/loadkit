@@ -2,25 +2,9 @@ import os
 import json
 from uuid import uuid4
 
-from boto.s3.connection import S3Connection, S3ResponseError
-from boto.s3.connection import Location
-
-LOCATION = Location.EU
-
-conn = S3Connection(os.environ.get('AWS_KEY_ID'),
-                    os.environ.get('AWS_SECRET'))
-
-
-bucket_name = 'data.mapthemoney.org'
-
-try:
-    bucket = conn.get_bucket(bucket_name)
-except S3ResponseError, se:
-    #if se.status == 404:
-    bucket = conn.create_bucket(bucket_name)
-
 
 class Manifest(dict):
+    """ A manifest has metadata on a package. """
 
     def __init__(self, key):
         self.key = key
@@ -49,6 +33,7 @@ class Package(object):
     def __init__(self, bucket, id=None):
         self.bucket = bucket
         self.id = id or uuid4().hex
+        self._resources = {}
 
     def _get_key(self, name):
         key_name = os.path.join(self.PREFIX, self.id, name)
@@ -57,16 +42,19 @@ class Package(object):
             key = self.bucket.new_key(key_name)
         return key
 
+    def resource(self, name):
+        if name not in self._resources:
+            self._resources[name] = self._get_key(name)
+        return self._resources[name]
+
     @property
     def source(self):
-        if not hasattr(self, '_source_key'):
-            self._source_key = self._get_key('source.data')
-        return self._source_key
+        return self.resource('source_data')
 
     @property
     def manifest(self):
         if not hasattr(self, '_manifest'):
-            key = self._get_key(self.MANIFEST)
+            key = self.resource(self.MANIFEST)
             self._manifest = Manifest(key)
         return self._manifest
 
@@ -103,14 +91,3 @@ class PackageIndex(object):
             if part == Package.MANIFEST:
                 yield self.get(id)
 
-
-index = PackageIndex(bucket)
-for package in index:
-    print package, package.manifest.items()
-
-# package = Package(bucket)
-
-PATH = '/Users/fl/Downloads/interpol.csv'
-with open(PATH, 'rb') as fh:
-    package = index.create({'file_name': PATH})
-    package.source.set_contents_from_file(fh)
