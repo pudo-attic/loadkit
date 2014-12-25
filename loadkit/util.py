@@ -21,7 +21,7 @@ def guess_extension(manifest):
 
 def json_default(obj):
     if isinstance(obj, datetime):
-        obj = obj.date()
+        obj = obj.isoformat()
     if isinstance(obj, date):
         return 'loadKitDate(%s)' % obj.isoformat()
     return obj

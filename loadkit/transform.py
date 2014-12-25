@@ -1,6 +1,7 @@
 import os
 import random
 import logging
+from datetime import datetime
 from urllib import urlopen
 
 from slugify import slugify
@@ -111,6 +112,8 @@ def resource_to_table(resource, name):
             data = {}
             for cell, field in zip(row, fields):
                 value = cell.value
+                if isinstance(value, datetime):
+                    value = value.date()
                 if isinstance(value, basestring) and not len(value.strip()):
                     value = None
                 data[field['name']] = value
