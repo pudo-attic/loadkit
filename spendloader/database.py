@@ -1,7 +1,7 @@
-from spendloader.table import get_records
+from spendloader.table import Table
 
 
 def database_load(engine, package):
     
-    for record in get_records(package):
+    for record in Table(package).records():
         print 'REC', record

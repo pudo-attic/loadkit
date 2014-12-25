@@ -10,7 +10,7 @@ from messytables import any_tableset, type_guess
 from messytables import types_processor, headers_guess
 from messytables import headers_processor, offset_processor
 
-from spendloader.table import store_records
+from spendloader.table import Table
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +27,6 @@ def get_fileobj(package):
 def package_rows(package):
     """ Generate an iterator over all the rows in this package's
     source data. """
-
     # Try to gather information about the source file type.
     if not package.manifest.get('extension'):
         source_file = package.manifest.get('source_file', '')
@@ -91,6 +90,9 @@ def generate_field_spec(row):
 
 
 def random_sample(value, field, row, num=10):
+    """ Collect a random sample of the values in a particular
+    field based on the reservoir sampling technique. """
+    # TODO: Could become a more general DQ piece.
     if value is None:
         field['has_nulls'] = True
         return
@@ -109,7 +111,8 @@ def random_sample(value, field, row, num=10):
 
 def convert_package(package):
     """ Store a parsed version of the package resource. """
-    with store_records(package) as save:
+
+    with Table(package).store() as save:
         fields = None
         for i, row in enumerate(package_rows(package)):
             if fields is None:
@@ -122,7 +125,7 @@ def convert_package(package):
 
             save(data)
 
-        log.info("Converted %s rows with %s columns.", i, len(fields))
-        package.manifest['fields'] = fields
-        package.manifest['num_records'] = i
-        package.save()
+    log.info("Converted %s rows with %s columns.", i, len(fields))
+    package.manifest['fields'] = fields
+    package.manifest['num_records'] = i
+    package.save()
