@@ -23,8 +23,10 @@ artifact = transform.resource_to_table(resource, 'table')
 print 'Artifact generated:', artifact
 
 # Load into a database:
-engine = create_engine('sqlite://')
+engine = create_engine('sqlite:///output.sqlite3')
 
 # This will generate a table matching the columns of the
 # artifact:
 table = load.table(engine, artifact)
+
+# TODO: Feed ``table`` into cubes :)
