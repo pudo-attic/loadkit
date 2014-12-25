@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.INFO)
 FIXTURES = os.path.join(os.path.dirname(__file__), 'fixtures')
 CSV_FIXTURE = os.path.join(FIXTURES, 'barnet-2009.csv')
 CSV_URL = 'https://raw.githubusercontent.com/okfn/dpkg-barnet/master/barnet-2009.csv'
+GPC_FIXTURE = os.path.join(FIXTURES, 'gpc-july-2014.csv')
 
 
 def get_bucket(bucket_name='tests.mapthemoney.org'):

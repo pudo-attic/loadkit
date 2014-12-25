@@ -1,5 +1,6 @@
 import os
 from slugify import slugify
+from datetime import datetime
 
 
 def make_secure_filename(source):
@@ -17,3 +18,18 @@ def guess_extension(manifest):
         _, ext = os.path.splitext(source_url)
     return ext.replace('.', '').lower().strip()
             
+
+def json_default(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    return obj
+
+
+def json_hook(obj):
+    for k, v in obj.items():
+        try:
+            if isinstance(v, unicode):
+                obj[k] = datetime.strptime(v, "%Y-%m-%dT%H:%M:%S")
+        except ValueError:
+            pass
+    return obj

@@ -1,8 +1,9 @@
 import boto
 from moto import mock_s3
 
-from loadkit import PackageIndex, extract
+from loadkit import PackageIndex, extract, transform
 from loadkit.tests.util import CSV_FIXTURE, CSV_URL
+from loadkit.tests.util import GPC_FIXTURE
 
 
 @mock_s3
@@ -44,4 +45,18 @@ def test_extract_url():
     assert res is not None, res
 
     assert 'barnet-2009.csv' in res.path, res
+
+
+@mock_s3
+def test_parse_with_dates():
+    conn = boto.connect_s3()
+    bucket = conn.create_bucket('test.mapthemoney.org')
+
+    package = PackageIndex(bucket).create()
+    res = extract.from_file(package, GPC_FIXTURE)
+    artifact = transform.resource_to_table(res, 'table')
+
+    assert artifact.name == 'table'
+    assert False, list(artifact.records())
+
 

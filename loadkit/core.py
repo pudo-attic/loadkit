@@ -5,6 +5,8 @@ import logging
 from contextlib import contextmanager
 from uuid import uuid4
 
+from loadkit.util import json_default, json_hook
+
 log = logging.getLogger(__name__)
 
 
@@ -17,10 +19,10 @@ class Manifest(dict):
 
     def reload(self):
         if self.key.exists():
-            self.update(json.load(self.key))
+            self.update(json.load(self.key, object_hook=json_hook))
 
     def save(self):
-        content = json.dumps(self)
+        content = json.dumps(self, default=json_default)
         self.key.set_contents_from_string(content)
 
     def __repr__(self):
@@ -130,7 +132,12 @@ class Artifact(Resource):
         table. """
         output = tempfile.NamedTemporaryFile(suffix='.json')
         try:
-            yield lambda obj: output.write(json.dumps(obj) + '\n')
+
+            def write(o):
+                line = json.dumps(o, default=json_default)
+                return output.write(line + '\n')
+
+            yield write
 
             output.seek(0)
             log.info("Uploading generated artifact to S3 (%r)...", self.key)
@@ -147,7 +154,7 @@ class Artifact(Resource):
             output.seek(0)
 
             for line in output.file:
-                yield json.loads(line)
+                yield json.loads(line, object_hook=json_hook)
         
         finally:
             output.close()
