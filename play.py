@@ -20,9 +20,9 @@ except S3ResponseError, se:
     bucket = conn.create_bucket(bucket_name, location=Location.EU)
 
 
-from spendloader import PackageIndex
-from spendloader.convert import convert_package
-from spendloader.database import database_load
+from loadkit import PackageIndex
+from loadkit.convert import convert_package
+from loadkit.database import database_load
 
 index = PackageIndex(bucket)
 

@@ -1,6 +1,11 @@
 import os
 import json
+import tempfile
+import logging
+from contextlib import contextmanager
 from uuid import uuid4
+
+log = logging.getLogger(__name__)
 
 
 class Manifest(dict):
@@ -41,11 +46,6 @@ class Package(object):
         if key is None:
             key = self.bucket.new_key(key_name)
         return key
-
-    def resource(self, name):
-        if name not in self._resources:
-            self._resources[name] = self._get_key(name)
-        return self._resources[name]
 
     @property
     def source(self):
@@ -95,3 +95,66 @@ class PackageIndex(object):
             if part == Package.MANIFEST:
                 yield self.get(id)
 
+
+class Resource(object):
+    """ Any file within the prefix of the given package, including
+    source data and artifacts. """
+
+    def __init__(self, package, path):
+        self.package = package
+        self.path = path
+        self.key = package._get_key(path)
+
+        # Welcome to the world of open data:
+        self.key.make_public()
+
+    @property
+    def url(self):
+        return self.key.generate_url(expires_in=0, query_auth=False)
+
+    def __repr__(self):
+        return '<Resource(%r)>' % self.path
+
+
+class Artifact(Resource):
+    """ The artifact holds a temporary, cleaned representation of the
+    package resource (as a newline-separated set of JSON
+    documents). """
+
+    RESOURCE = 'artifacts/%s.json'
+    
+    def __init__(self, package, name):
+        self.name = name
+        path = self.RESOURCE % name
+        super(Artifact, self).__init__(package, path)
+
+    @contextmanager
+    def store(self):
+        """ Create a context manager to store records in the cleaned
+        table. """
+        output = tempfile.NamedTemporaryFile(suffix='.json')
+        try:
+            yield lambda obj: output.write(json.dumps(obj) + '\n')
+
+            output.seek(0)
+            log.info("Uploading generated artifact to S3 (%r)...", self.key)
+            self.key.set_contents_from_file(output)
+        finally:
+            output.close()
+
+    def records(self):
+        """ Get each record that has been stored in the table. """
+        output = tempfile.NamedTemporaryFile(suffix='.json')
+        try:
+            log.info("Loading artifact from S3 (%r)...", self.key)
+            self.key.get_contents_to_file(output)
+            output.seek(0)
+
+            for line in output.file:
+                yield json.loads(line)
+        
+        finally:
+            output.close()
+
+    def __repr__(self):
+        return '<Artifact(%r)>' % self.name

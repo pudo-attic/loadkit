@@ -1,8 +1,5 @@
-
 from sqlalchemy.schema import MetaData, Column
-from sqlalchemy.schema import Table as SQLATable
-
-from spendloader.table import Table
+from sqlalchemy.schema import Table
 
 
 class DatabaseLoader(object):

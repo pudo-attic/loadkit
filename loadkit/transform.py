@@ -1,6 +1,4 @@
 import os
-import json
-import tempfile
 import random
 import logging
 from urllib import urlopen
@@ -10,34 +8,22 @@ from messytables import any_tableset, type_guess
 from messytables import types_processor, headers_guess
 from messytables import headers_processor, offset_processor
 
-from spendloader.artifact import Artifact
+from loadkit.core import Artifact
+from loadkit.util import guess_extension
 
 log = logging.getLogger(__name__)
 
 
-def get_fileobj(package):
-    # This is a work-around because messytables hangs on boto file
-    # handles, so we're doing it via plain old HTTP.
-    package.source.make_public()
-    url = package.source.generate_url(expires_in=0, query_auth=False)
-    log.info("Attempting to parse %r (%s) source data...", package, url)
-    return urlopen(url)
-
-
-def package_rows(package):
-    """ Generate an iterator over all the rows in this package's
+def resource_rows(package, resource):
+    """ Generate an iterator over all the rows in this resource's
     source data. """
     # Try to gather information about the source file type.
     if not package.manifest.get('extension'):
-        source_file = package.manifest.get('source_file', '')
-        _, ext = os.path.splitext(source_file)
-        if not len(ext):
-            source_url = package.manifest.get('source_url', '')
-            _, ext = os.path.splitext(source_url)
-        ext = ext.replace('.', '').lower().strip()
-        package.manifest['extension'] = ext
+        package.manifest['extension'] = guess_extension(package.manifest)
     
-    table_set = any_tableset(get_fileobj(package),
+    # This is a work-around because messytables hangs on boto file
+    # handles, so we're doing it via plain old HTTP.
+    table_set = any_tableset(urlopen(resource.url),
                              extension=package.manifest.get('extension'),
                              mimetype=package.manifest.get('mime_type'))
     tables = list(table_set.tables)
@@ -109,11 +95,15 @@ def random_sample(value, field, row, num=10):
         field['samples'][j] = value
     
 
-def convert_package(package, name):
+def resource_to_table(resource, name):
     """ Store a parsed version of the package resource. """
-    with Artifact(package, name).store() as save:
+    package = resource.package
+    artifact = Artifact(package, name)
+
+    with artifact.store() as save:
+        
         fields = None
-        for i, row in enumerate(package_rows(package)):
+        for i, row in enumerate(resource_rows(package, resource)):
             if fields is None:
                 fields = generate_field_spec(row)
 
@@ -128,3 +118,5 @@ def convert_package(package, name):
     package.manifest['fields'] = fields
     package.manifest['num_records'] = i
     package.save()
+
+    return artifact
