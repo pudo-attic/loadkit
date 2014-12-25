@@ -12,11 +12,11 @@ class Table(object):
     package resource (as a newline-separated set of JSON
     documents). """
 
-    TABLE_RESOURCE = 'table.json'
+    RESOURCE = 'table.json'
     
     def __init__(self, package):
         self.package = package
-        self.key = package.resource(self.TABLE_RESOURCE)
+        self.key = package.resource(self.RESOURCE)
 
     @contextmanager
     def store(self):
