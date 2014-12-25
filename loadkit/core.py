@@ -59,6 +59,9 @@ class Package(object):
     def save(self):
         self.manifest.save()
 
+    def __eq__(self, other):
+        return self.id == other.id
+
     def __repr__(self):
         return '<Package(%r)>' % self.id
 
