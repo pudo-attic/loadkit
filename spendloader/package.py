@@ -72,12 +72,16 @@ class PackageIndex(object):
     def __init__(self, bucket):
         self.bucket = bucket
 
-    def create(self, manifest=None):
+    def create(self, manifest=None, source_file=None, source_url=None,
+               mime_type=None):
         """ Create a package and save a manifest. If ``manifest`` is
         given, the values are saved to the manifest. """
         package = Package(self.bucket)
         if manifest is not None:
             package.manifest.update(manifest)
+        package.manifest['source_file'] = source_file
+        package.manifest['source_url'] = source_url
+        package.manifest['mime_type'] = mime_type
         package.save()
         return package
 
