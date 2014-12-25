@@ -21,7 +21,9 @@ def guess_extension(manifest):
 
 def json_default(obj):
     if isinstance(obj, datetime):
-        return obj.date().isoformat()
+        obj = obj.date()
+    if isinstance(obj, date):
+        return 'loadKitDate(%s)' % obj.isoformat()
     return obj
 
 
@@ -29,7 +31,7 @@ def json_hook(obj):
     for k, v in obj.items():
         try:
             if isinstance(v, unicode):
-                obj[k] = datetime.strptime(v, "%Y-%m-%d").date()
+                obj[k] = datetime.strptime(v, "loadKitDate(%Y-%m-%d)").date()
         except ValueError:
             pass
         try:
