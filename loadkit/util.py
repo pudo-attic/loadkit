@@ -1,4 +1,12 @@
 import os
+from slugify import slugify
+
+
+def make_secure_filename(source):
+    source = os.path.basename(source)
+    fn, ext = os.path.splitext(source)
+    ext = ext or '.raw'
+    return slugify(fn) + ext
 
 
 def guess_extension(manifest):

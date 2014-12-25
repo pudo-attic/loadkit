@@ -38,23 +38,21 @@ class Package(object):
     def __init__(self, bucket, id=None):
         self.bucket = bucket
         self.id = id or uuid4().hex
-        self._resources = {}
+        self._keys = {}
 
-    def _get_key(self, name):
-        key_name = os.path.join(self.PREFIX, self.id, name)
-        key = self.bucket.get_key(key_name)
-        if key is None:
-            key = self.bucket.new_key(key_name)
-        return key
-
-    @property
-    def source(self):
-        return self.resource('source.raw')
+    def get_key(self, name):
+        if name not in self._keys:
+            key_name = os.path.join(self.PREFIX, self.id, name)
+            key = self.bucket.get_key(key_name)
+            if key is None:
+                key = self.bucket.new_key(key_name)
+            self._keys[name] = key
+        return self._keys[name]
 
     @property
     def manifest(self):
         if not hasattr(self, '_manifest'):
-            key = self.resource(self.MANIFEST)
+            key = self.get_key(self.MANIFEST)
             self._manifest = Manifest(key)
         return self._manifest
 
@@ -72,16 +70,12 @@ class PackageIndex(object):
     def __init__(self, bucket):
         self.bucket = bucket
 
-    def create(self, manifest=None, source_file=None, source_url=None,
-               mime_type=None):
+    def create(self, manifest=None):
         """ Create a package and save a manifest. If ``manifest`` is
         given, the values are saved to the manifest. """
         package = Package(self.bucket)
         if manifest is not None:
             package.manifest.update(manifest)
-        package.manifest['source_file'] = source_file
-        package.manifest['source_url'] = source_url
-        package.manifest['mime_type'] = mime_type
         package.save()
         return package
 
@@ -103,13 +97,12 @@ class Resource(object):
     def __init__(self, package, path):
         self.package = package
         self.path = path
-        self.key = package._get_key(path)
-
-        # Welcome to the world of open data:
-        self.key.make_public()
-
+        self.key = package.get_key(path)
+        
     @property
     def url(self):
+        # Welcome to the world of open data:
+        self.key.make_public()
         return self.key.generate_url(expires_in=0, query_auth=False)
 
     def __repr__(self):

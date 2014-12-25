@@ -10,11 +10,11 @@ class DatabaseLoader(object):
         self.engine = engine
         self.package = package
 
-    def schema(self, artifact):
+    def table(self, artifact):
         pass
 
     def load(self, artifact):
-        print self.schema(artifact)
+        print self.table(artifact)
 
         for record in artifact.records():
             print 'REC', record
