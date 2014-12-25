@@ -7,16 +7,17 @@ from contextlib import contextmanager
 log = logging.getLogger(__name__)
 
 
-class Table(object):
-    """ The table holds a temporary, cleaned representation of the
+class Artifact(object):
+    """ The artifact holds a temporary, cleaned representation of the
     package resource (as a newline-separated set of JSON
     documents). """
 
-    RESOURCE = 'table.json'
+    RESOURCE = '%s.json'
     
-    def __init__(self, package):
+    def __init__(self, package, name):
         self.package = package
-        self.key = package.resource(self.RESOURCE)
+        self.name = name
+        self.key = package.resource(self.RESOURCE % name)
 
     @contextmanager
     def store(self):
@@ -27,7 +28,7 @@ class Table(object):
             yield lambda obj: output.write(json.dumps(obj) + '\n')
 
             output.seek(0)
-            log.info("Uploading generated table to S3 (%r)...", self.key)
+            log.info("Uploading generated artifact to S3 (%r)...", self.key)
             self.key.set_contents_from_file(output)
         finally:
             output.close()
@@ -36,7 +37,7 @@ class Table(object):
         """ Get each record that has been stored in the table. """
         output = tempfile.NamedTemporaryFile(suffix='.json')
         try:
-            log.info("Loading cleaned table from S3 (%r)...", self.key)
+            log.info("Loading artifact from S3 (%r)...", self.key)
             self.key.get_contents_to_file(output)
             output.seek(0)
 
@@ -45,3 +46,6 @@ class Table(object):
         
         finally:
             output.close()
+
+    def __repr__(self):
+        return '<Artifact(%r)>' % self.name

@@ -1,12 +1,11 @@
 import os
 import logging
 
+from sqlalchemy import create_engine
 from boto.s3.connection import S3Connection, S3ResponseError
 from boto.s3.connection import Location
 
 logging.basicConfig(level=logging.INFO)
-
-LOCATION = Location.EU
 
 conn = S3Connection(os.environ.get('AWS_KEY_ID'),
                     os.environ.get('AWS_SECRET'))
@@ -18,7 +17,7 @@ try:
     bucket = conn.get_bucket(bucket_name)
 except S3ResponseError, se:
     #if se.status == 404:
-    bucket = conn.create_bucket(bucket_name)
+    bucket = conn.create_bucket(bucket_name, location=Location.EU)
 
 
 from spendloader import PackageIndex

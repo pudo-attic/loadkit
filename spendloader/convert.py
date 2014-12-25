@@ -10,7 +10,7 @@ from messytables import any_tableset, type_guess
 from messytables import types_processor, headers_guess
 from messytables import headers_processor, offset_processor
 
-from spendloader.table import Table
+from spendloader.artifact import Artifact
 
 log = logging.getLogger(__name__)
 
@@ -109,10 +109,9 @@ def random_sample(value, field, row, num=10):
         field['samples'][j] = value
     
 
-def convert_package(package):
+def convert_package(package, name):
     """ Store a parsed version of the package resource. """
-
-    with Table(package).store() as save:
+    with Artifact(package, name).store() as save:
         fields = None
         for i, row in enumerate(package_rows(package)):
             if fields is None:

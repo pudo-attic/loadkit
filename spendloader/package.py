@@ -49,7 +49,7 @@ class Package(object):
 
     @property
     def source(self):
-        return self.resource('source_data')
+        return self.resource('source.raw')
 
     @property
     def manifest(self):
