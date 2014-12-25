@@ -15,6 +15,10 @@ See ``demo.py`` in the project root.
 ### What is to be done
 
 * Decide which bits of the ``datapackage`` specification this needs to adhere to.
+* Allow passing in some metadata to aid interpretation of the table.
+* Include much more data quality assessment tooling and data validation options.
+* Set up custom exceptions and error handling (invalid URLs and file names, too large, parsing failures, loading failures).
+* Think about whether the resulting DB must be denormalized. 
 * Create a Postgres FTS index when loading the data with [sqlalchemy-searchable](https://github.com/kvesteri/sqlalchemy-searchable/).
 
 ### References
