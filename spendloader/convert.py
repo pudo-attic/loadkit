@@ -1,9 +1,15 @@
 import os
+import json
+import tempfile
+import random
 from urllib import urlopen
 
+from slugify import slugify
 from messytables import any_tableset, type_guess
 from messytables import types_processor, headers_guess
 from messytables import headers_processor, offset_processor
+
+TABLE_RESOURCE = 'table.json'
 
 
 def get_fileobj(package):
@@ -46,7 +52,81 @@ def package_rows(package):
         yield row
 
 
+def column_alias(cell, names):
+    """ Generate a normalized version of the column name. """
+    column = slugify(cell.column or '', separator='_')
+    column = column.strip('_')
+    column = 'column' if not len(column) else column
+    name, i = column, 2
+    # de-dupe: column, column_2, column_3, ...
+    while name in names:
+        name = '%s_%s' % (name, i)
+        i += 1
+    return name
+
+
+def generate_field_spec(row):
+    """ Generate a set of metadata for each field/column in
+    the data. This is loosely based on jsontableschema. """
+    names = set()
+    fields = []
+    for cell in row:
+        name = column_alias(cell, names)
+        field = {
+            'name': name,
+            'title': cell.column,
+            'type': unicode(cell.type).lower(),
+            'has_nulls': False,
+            'has_empty': False,
+            'samples': []
+        }
+        if hasattr(cell.type, 'format'):
+            field['format'] = cell.type.format
+        fields.append(field)
+    return fields
+
+
+def random_sample(value, field, row, num=10):
+    if value is None:
+        field['has_nulls'] = True
+        return
+    if value in field['samples']:
+        return
+    if isinstance(value, basestring) and not len(value.strip()):
+        field['has_empty'] = True
+        return
+    if len(field['samples']) < num:
+        field['samples'].append(value)
+        return
+    j = random.randint(0, row)
+    if j < (num - 1):
+        field['samples'][j] = value
+
+
+def get_table(package):
+    return package.resource(TABLE_RESOURCE)
+    
+
 def convert_package(package):
     """ Store a parsed version of the package resource. """
-    for row in package_rows(package):
-        print row
+    key = get_table(package)
+    output = tempfile.NamedTemporaryFile(suffix='.json')
+    
+    fields = None
+    for i, row in enumerate(package_rows(package)):
+        if fields is None:
+            fields = generate_field_spec(row)
+
+        data = {}
+        for cell, field in zip(row, fields):
+            data[field['name']] = cell.value
+            random_sample(cell.value, field, i)
+
+        output.write(json.dumps(data) + '\n')
+
+    package.manifest['fields'] = fields
+    package.save()
+
+    output.seek(0)
+    key.set_contents_from_file(output)
+    output.close()

@@ -23,15 +23,18 @@ from spendloader.convert import convert_package
 
 index = PackageIndex(bucket)
 
-for package in index:
-    #print package, package.manifest.items()
-    convert_package(package)
-    #print package
+#for package in index:
+#    #print package, package.manifest.items()
+#    convert_package(package)
+#    #print package
 
 
 # package = Package(bucket)
 
 #PATH = '/Users/fl/Downloads/interpol.csv'
-#with open(PATH, 'rb') as fh:
-#    package = index.create(source_file=PATH)
-#    package.source.set_contents_from_file(fh)
+#PATH = '/Users/fl/Downloads/Plan_2015.xlsx'
+PATH = 'barnet-2009.csv'
+with open(PATH, 'rb') as fh:
+    package = index.create(source_file=PATH)
+    package.source.set_contents_from_file(fh)
+    convert_package(package)
