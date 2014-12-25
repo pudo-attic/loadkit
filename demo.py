@@ -24,9 +24,7 @@ print 'Artifact generated:', artifact
 
 # Load into a database:
 engine = create_engine('sqlite://')
-db = load.DatabaseLoader(engine, package)
 
 # This will generate a table matching the columns of the
 # artifact:
-table = db.load(artifact)
-
+table = load.table(engine, artifact)
