@@ -1,6 +1,6 @@
 import os
 from slugify import slugify
-from datetime import datetime
+from datetime import datetime, date
 
 
 def make_secure_filename(source):
@@ -21,12 +21,17 @@ def guess_extension(manifest):
 
 def json_default(obj):
     if isinstance(obj, datetime):
-        return obj.isoformat()
+        return obj.date().isoformat()
     return obj
 
 
 def json_hook(obj):
     for k, v in obj.items():
+        try:
+            if isinstance(v, unicode):
+                obj[k] = datetime.strptime(v, "%Y-%m-%d").date()
+        except ValueError:
+            pass
         try:
             if isinstance(v, unicode):
                 obj[k] = datetime.strptime(v, "%Y-%m-%dT%H:%M:%S")

@@ -70,6 +70,7 @@ def generate_field_spec(row):
             'samples': []
         }
         if hasattr(cell.type, 'format'):
+            field['type'] = 'date'
             field['format'] = cell.type.format
         fields.append(field)
     return fields
@@ -118,7 +119,7 @@ def resource_to_table(resource, name):
             check_empty = set(data.values())
             if None in check_empty and len(check_empty) == 1:
                 continue
-            
+
             save(data)
 
     log.info("Converted %s rows with %s columns.", i, len(fields))

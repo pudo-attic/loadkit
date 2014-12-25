@@ -1,10 +1,11 @@
 from sqlalchemy.schema import MetaData, Column
 from sqlalchemy.schema import Table
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, Date
 
 TYPES = {
     'string': String,
-    'integer': Integer
+    'integer': Integer,
+    'date': Date
 }
 
 
@@ -40,7 +41,8 @@ class DatabaseLoader(object):
                 table.append_column(col)
 
                 for field in self.fields:
-                    data_type = TYPES.get(field.get('type', 'string'))
+                    print field
+                    data_type = TYPES.get(field.get('type', String))
                     col = Column(field.get('name'), data_type)
                     table.append_column(col)
 
