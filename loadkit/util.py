@@ -29,14 +29,13 @@ def json_default(obj):
 
 def json_hook(obj):
     for k, v in obj.items():
-        try:
-            if isinstance(v, unicode):
+        if isinstance(v, basestring):
+            try:
                 obj[k] = datetime.strptime(v, "loadKitDate(%Y-%m-%d)").date()
-        except ValueError:
-            pass
-        try:
-            if isinstance(v, unicode):
+            except ValueError:
+                pass
+            try:
                 obj[k] = datetime.strptime(v, "%Y-%m-%dT%H:%M:%S")
-        except ValueError:
-            pass
+            except ValueError:
+                pass
     return obj
