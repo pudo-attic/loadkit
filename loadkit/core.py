@@ -52,6 +52,22 @@ class Package(object):
         return self._keys[name]
 
     @property
+    def resources(self):
+        prefix = os.path.join(self.PREFIX, self.id)
+        for key in self.bucket.get_all_keys(prefix=prefix):
+            path = key.name.replace(prefix, '').strip('/')
+            if path == self.MANIFEST:
+                continue
+            yield Resource(self, path)
+    
+    @property
+    def artifacts(self):
+        for resource in self.resources:
+            artifact = Artifact.from_path(self, resource.path)
+            if artifact is not None:
+                yield artifact
+
+    @property
     def manifest(self):
         if not hasattr(self, '_manifest'):
             key = self.get_key(self.MANIFEST)
@@ -119,12 +135,20 @@ class Artifact(Resource):
     package resource (as a newline-separated set of JSON
     documents). """
 
-    RESOURCE = 'artifacts/%s.json'
+    SUB_PREFIX = 'artifacts/'
+    RESOURCE = '%s%%s.json' % SUB_PREFIX
     
     def __init__(self, package, name):
         self.name = name
         path = self.RESOURCE % name
         super(Artifact, self).__init__(package, path)
+
+    @classmethod
+    def from_path(cls, package, path):
+        if path.startswith(cls.SUB_PREFIX):
+            _, name = path.split(cls.SUB_PREFIX)
+            name = name.replace('.json', '')
+            return cls(package, name)
 
     @contextmanager
     def store(self):

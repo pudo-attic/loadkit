@@ -34,6 +34,12 @@ def test_extract_file():
     res = extract.from_file(package, CSV_FIXTURE)
     assert res is not None, res
 
+    resources = list(package.resources)
+    assert len(resources) == 1, resources
+
+    artifacts = list(package.artifacts)
+    assert len(artifacts) == 0, artifacts
+
     assert 'barnet-2009.csv' in res.path, res
 
 
