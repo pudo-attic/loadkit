@@ -2,24 +2,24 @@ from urllib import urlopen
 from shutil import copyfileobj
 import tempfile
 
-from loadkit.core import Resource
+from loadkit.core import Source
 from loadkit.util import make_secure_filename
 
 
-def _make_resource(package, name, fh, metadata):
+def _make_source(package, name, fh, metadata):
     package.manifest.update(metadata)
     package.save()
-    resource = Resource(package, name)
-    resource.key.set_contents_from_file(fh)
+    source = Source(package, name)
+    source.key.set_contents_from_file(fh)
     fh.close()
-    return resource
+    return source
 
 
 def from_file(package, source_file):
     name = make_secure_filename(source_file)
     meta = {'source_file': source_file}
     fh = open(source_file)
-    return _make_resource(package, name, fh, meta)
+    return _make_source(package, name, fh, meta)
 
 
 def from_url(package, source_url):
@@ -34,4 +34,4 @@ def from_url(package, source_url):
         'source_url': source_url,
         'mime_type': fh.headers.get('Content-Type')
     }
-    return _make_resource(package, name, temp, meta)
+    return _make_source(package, name, temp, meta)

@@ -31,16 +31,16 @@ def test_extract_file():
     bucket = conn.create_bucket('test.mapthemoney.org')
 
     package = PackageIndex(bucket).create()
-    res = extract.from_file(package, CSV_FIXTURE)
-    assert res is not None, res
+    src = extract.from_file(package, CSV_FIXTURE)
+    assert src is not None, src
 
-    resources = list(package.resources)
-    assert len(resources) == 1, resources
+    sources = list(package.sources)
+    assert len(sources) == 1, sources
 
     artifacts = list(package.artifacts)
     assert len(artifacts) == 0, artifacts
 
-    assert 'barnet-2009.csv' in res.path, res
+    assert 'barnet-2009.csv' in src.path, src
 
 
 @mock_s3
@@ -49,10 +49,10 @@ def test_extract_url():
     bucket = conn.create_bucket('test.mapthemoney.org')
 
     package = PackageIndex(bucket).create()
-    res = extract.from_url(package, CSV_URL)
-    assert res is not None, res
+    src = extract.from_url(package, CSV_URL)
+    assert src is not None, src
 
-    assert 'barnet-2009.csv' in res.path, res
+    assert 'barnet-2009.csv' in src.path, src
 
 
 @mock_s3
@@ -61,8 +61,8 @@ def test_parse_with_dates():
     bucket = conn.create_bucket('test.mapthemoney.org')
 
     package = PackageIndex(bucket).create()
-    res = extract.from_file(package, GPC_FIXTURE)
-    artifact = transform.resource_to_table(res, 'table')
+    src = extract.from_file(package, GPC_FIXTURE)
+    artifact = transform.resource_to_table(src, 'table')
 
     assert artifact.name == 'table'
     recs = list(artifact.records())

@@ -1,8 +1,8 @@
 import os
 from uuid import uuid4
 
-from loadkit.core.resource import Resource
 from loadkit.core.artifact import Artifact
+from loadkit.core.source import Source
 from loadkit.core.manifest import Manifest
 
 
@@ -28,21 +28,19 @@ class Package(object):
             self._keys[name] = key
         return self._keys[name]
 
-    @property
-    def resources(self):
-        prefix = os.path.join(self.PREFIX, self.id)
+    def _iter_resources(self, cls):
+        prefix = os.path.join(self.PREFIX, self.id, cls.GROUP)
         for key in self.bucket.get_all_keys(prefix=prefix):
-            path = key.name.replace(prefix, '').strip('/')
-            if path == self.MANIFEST:
-                continue
-            yield Resource(self, path)
-    
+            name = key.name.replace(prefix, '').strip('/')
+            yield cls(self, name)
+            
     @property
     def artifacts(self):
-        for resource in self.resources:
-            artifact = Artifact.from_path(self, resource.path)
-            if artifact is not None:
-                yield artifact
+        return self._iter_resources(Artifact)
+
+    @property
+    def sources(self):
+        return self._iter_resources(Source)
 
     @property
     def manifest(self):

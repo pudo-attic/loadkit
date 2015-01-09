@@ -1,14 +1,27 @@
+import os
 
 
 class Resource(object):
     """ Any file within the prefix of the given package, including
     source data and artifacts. """
 
-    def __init__(self, package, path):
+    GROUP = None
+
+    def __init__(self, package, name):
         self.package = package
-        self.path = path
-        self.key = package.get_key(path)
-        
+        self.name = name
+        self.key = package.get_key(self.path)
+
+    @property
+    def path(self):
+        return os.path.join(self.GROUP, self.name)
+
+    @classmethod
+    def from_path(cls, package, path):
+        if path.startswith(cls.GROUP):
+            _, name = path.split(cls.GROUP)
+            return cls(package, name)
+
     @property
     def url(self):
         # Welcome to the world of open data:

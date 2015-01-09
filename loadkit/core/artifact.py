@@ -14,21 +14,8 @@ class Artifact(Resource):
     package resource (as a newline-separated set of JSON
     documents). """
 
-    SUB_PREFIX = 'artifacts/'
-    RESOURCE = '%s%%s.json' % SUB_PREFIX
+    GROUP = 'artifacts'
     
-    def __init__(self, package, name):
-        self.name = name
-        path = self.RESOURCE % name
-        super(Artifact, self).__init__(package, path)
-
-    @classmethod
-    def from_path(cls, package, path):
-        if path.startswith(cls.SUB_PREFIX):
-            _, name = path.split(cls.SUB_PREFIX)
-            name = name.replace('.json', '')
-            return cls(package, name)
-
     @contextmanager
     def store(self):
         """ Create a context manager to store records in the cleaned

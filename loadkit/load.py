@@ -41,7 +41,6 @@ class DatabaseLoader(object):
                 table.append_column(col)
 
                 for field in self.fields:
-                    print field
                     data_type = TYPES.get(field.get('type', String))
                     col = Column(field.get('name'), data_type)
                     table.append_column(col)
