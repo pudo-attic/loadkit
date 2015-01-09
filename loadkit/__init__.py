@@ -1,1 +1,1 @@
-from loadkit.core import PackageIndex
+from loadkit.core import PackageIndex, Source, Artifact # noqa

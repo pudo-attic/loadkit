@@ -16,10 +16,14 @@ def _make_source(package, name, fh, metadata):
 
 
 def from_file(package, source_file):
-    name = make_secure_filename(source_file)
-    meta = {'source_file': source_file}
     fh = open(source_file)
-    return _make_source(package, name, fh, meta)
+    return from_fileobj(package, fh, source_name=source_file)
+
+
+def from_fileobj(package, fileobj, source_name=None):
+    name = make_secure_filename(source_name or 'source')
+    meta = {'source_file': source_name}
+    return _make_source(package, name, fileobj, meta)
 
 
 def from_url(package, source_url):

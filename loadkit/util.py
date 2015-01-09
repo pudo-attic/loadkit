@@ -1,4 +1,5 @@
 import os
+from decimal import Decimal
 from slugify import slugify
 from datetime import datetime, date
 
@@ -22,6 +23,8 @@ def guess_extension(manifest):
 def json_default(obj):
     if isinstance(obj, datetime):
         obj = obj.isoformat()
+    if isinstance(obj, Decimal):
+        obj = float(obj)
     if isinstance(obj, date):
         return 'loadKitDate(%s)' % obj.isoformat()
     return obj

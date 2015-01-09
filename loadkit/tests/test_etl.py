@@ -62,7 +62,7 @@ def test_parse_with_dates():
 
     package = PackageIndex(bucket).create()
     src = extract.from_file(package, GPC_FIXTURE)
-    artifact = transform.resource_to_table(src, 'table')
+    artifact = transform.to_table(src, 'table')
 
     assert artifact.name == 'table'
     recs = list(artifact.records())

@@ -97,16 +97,17 @@ def random_sample(value, field, row, num=10):
         field['samples'][j] = value
     
 
-def resource_to_table(resource, name):
+def to_table(resource, name):
     """ Store a parsed version of the package resource. """
     package = resource.package
     artifact = Artifact(package, name)
+    num_rows = 0
+    fields = {}
 
     with artifact.store() as save:
-        
-        fields = None
+
         for i, row in enumerate(resource_rows(package, resource)):
-            if fields is None:
+            if not len(fields):
                 fields = generate_field_spec(row)
 
             data = {}
@@ -124,10 +125,10 @@ def resource_to_table(resource, name):
                 continue
 
             save(data)
+            num_rows = i
 
-    log.info("Converted %s rows with %s columns.", i, len(fields))
-    package.manifest['fields'] = fields
-    package.manifest['num_records'] = i
+    log.info("Converted %s rows with %s columns.", num_rows, len(fields))
+    package.manifest['fields'] = {f.get('name'): f for f in fields}
+    package.manifest['num_records'] = num_rows
     package.save()
-
     return artifact

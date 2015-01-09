@@ -40,7 +40,7 @@ class DatabaseLoader(object):
                 col = Column('_id', Integer, primary_key=True)
                 table.append_column(col)
 
-                for field in self.fields:
+                for field in self.fields.values():
                     data_type = TYPES.get(field.get('type', String))
                     col = Column(field.get('name'), data_type)
                     table.append_column(col)
