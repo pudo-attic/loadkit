@@ -1,6 +1,6 @@
-import os
 import random
 import logging
+from decimal import Decimal
 from datetime import datetime
 from urllib import urlopen
 
@@ -15,7 +15,7 @@ from loadkit.util import guess_extension
 log = logging.getLogger(__name__)
 
 
-def resource_rows(package, resource):
+def resource_row_set(package, resource):
     """ Generate an iterator over all the rows in this resource's
     source data. """
     # Try to gather information about the source file type.
@@ -29,17 +29,9 @@ def resource_rows(package, resource):
                              mimetype=package.manifest.get('mime_type'))
     tables = list(table_set.tables)
     if not len(tables):
+        log.error("No tables were found in the source file.")
         return
-
-    row_set = tables[0]
-    offset, headers = headers_guess(row_set.sample)
-    row_set.register_processor(headers_processor(headers))
-    row_set.register_processor(offset_processor(offset + 1))
-    types = type_guess(row_set.sample, strict=True)
-    row_set.register_processor(types_processor(types))
-    
-    for row in row_set:
-        yield row
+    return tables[0]
 
 
 def column_alias(cell, names):
@@ -95,40 +87,57 @@ def random_sample(value, field, row, num=10):
     j = random.randint(0, row)
     if j < (num - 1):
         field['samples'][j] = value
-    
+
+
+def parse_table(row_set, save_func):
+    num_rows = 0
+    fields = {}
+
+    offset, headers = headers_guess(row_set.sample)
+    row_set.register_processor(headers_processor(headers))
+    row_set.register_processor(offset_processor(offset + 1))
+    types = type_guess(row_set.sample, strict=True)
+    row_set.register_processor(types_processor(types))
+
+    for i, row in enumerate(row_set):
+        if not len(fields):
+            fields = generate_field_spec(row)
+
+        data = {}
+        for cell, field in zip(row, fields):
+            value = cell.value
+            if isinstance(value, datetime):
+                value = value.date()
+            if isinstance(value, Decimal):
+                # Baby jesus forgive me.
+                value = float(value)
+            if isinstance(value, basestring) and not len(value.strip()):
+                value = None
+            data[field['name']] = value
+            random_sample(value, field, i)
+
+        check_empty = set(data.values())
+        if None in check_empty and len(check_empty) == 1:
+            continue
+
+        save_func(data)
+        num_rows = i
+
+    fields = {f.get('name'): f for f in fields}
+    return num_rows, fields
+
 
 def to_table(resource, name):
     """ Store a parsed version of the package resource. """
     package = resource.package
     artifact = Artifact(package, name)
-    num_rows = 0
-    fields = {}
 
     with artifact.store() as save:
-
-        for i, row in enumerate(resource_rows(package, resource)):
-            if not len(fields):
-                fields = generate_field_spec(row)
-
-            data = {}
-            for cell, field in zip(row, fields):
-                value = cell.value
-                if isinstance(value, datetime):
-                    value = value.date()
-                if isinstance(value, basestring) and not len(value.strip()):
-                    value = None
-                data[field['name']] = value
-                random_sample(value, field, i)
-
-            check_empty = set(data.values())
-            if None in check_empty and len(check_empty) == 1:
-                continue
-
-            save(data)
-            num_rows = i
+        row_set = resource_row_set(package, resource)
+        num_rows, fields = parse_table(row_set, save)
 
     log.info("Converted %s rows with %s columns.", num_rows, len(fields))
-    package.manifest['fields'] = {f.get('name'): f for f in fields}
+    package.manifest['fields'] = fields
     package.manifest['num_records'] = num_rows
     package.save()
     return artifact
