@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from loadkit.core.artifact import Artifact
 from loadkit.core.source import Source
+from loadkit.core.logfile import LogFile
 from loadkit.core.manifest import Manifest
 
 
@@ -28,10 +29,11 @@ class Package(object):
             self._keys[name] = key
         return self._keys[name]
 
-    def _iter_resources(self, cls):
-        prefix = os.path.join(self.PREFIX, self.id, cls.GROUP)
+    def _iter_resources(self, cls, *extra):
+        prefix = os.path.join(self.PREFIX, self.id, cls.GROUP, *extra)
         for key in self.bucket.get_all_keys(prefix=prefix):
-            name = key.name.replace(prefix, '').strip('/')
+            cut = os.path.join(self.PREFIX, self.id, cls.GROUP)
+            name = key.name.replace(cut, '').strip('/')
             yield cls(self, name)
             
     @property
@@ -41,6 +43,9 @@ class Package(object):
     @property
     def sources(self):
         return self._iter_resources(Source)
+
+    def logfiles(self, prefix):
+        return self._iter_resources(LogFile, prefix)
 
     @property
     def manifest(self):
