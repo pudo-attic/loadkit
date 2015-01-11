@@ -19,14 +19,14 @@ def resource_row_set(package, resource):
     """ Generate an iterator over all the rows in this resource's
     source data. """
     # Try to gather information about the source file type.
-    if not package.manifest.get('extension'):
-        package.manifest['extension'] = guess_extension(package.manifest)
+    if not resource.meta.get('extension'):
+        resource.meta['extension'] = guess_extension(resource.meta)
     
     # This is a work-around because messytables hangs on boto file
     # handles, so we're doing it via plain old HTTP.
     table_set = any_tableset(urlopen(resource.url),
-                             extension=package.manifest.get('extension'),
-                             mimetype=package.manifest.get('mime_type'))
+                             extension=resource.meta.get('extension'),
+                             mimetype=resource.meta.get('mime_type'))
     tables = list(table_set.tables)
     if not len(tables):
         log.error("No tables were found in the source file.")
@@ -131,6 +131,7 @@ def to_table(resource, name):
     """ Store a parsed version of the package resource. """
     package = resource.package
     artifact = Artifact(package, name)
+    artifact.meta.update(resource.meta)
 
     with artifact.store() as save:
         row_set = resource_row_set(package, resource)
