@@ -7,10 +7,10 @@ from loadkit.util import make_secure_filename
 
 
 def _make_source(package, name, fh, metadata):
-    package.manifest.update(metadata)
-    package.save()
     source = Source(package, name)
     source.key.set_contents_from_file(fh)
+    source.meta.update(metadata)
+    source.meta.save()
     fh.close()
     return source
 

@@ -1,5 +1,7 @@
 import os
 
+from loadkit.core.manifest import ResourceMetaData
+
 
 class Resource(object):
     """ Any file within the prefix of the given package, including
@@ -11,6 +13,7 @@ class Resource(object):
         self.package = package
         self.name = name
         self.key = package.get_key(self.path)
+        self.meta = ResourceMetaData(self)
 
     @property
     def path(self):

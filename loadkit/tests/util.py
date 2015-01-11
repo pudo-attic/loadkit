@@ -1,7 +1,6 @@
 import os
 import logging
 
-from sqlalchemy import create_engine
 from boto.s3.connection import S3Connection, S3ResponseError
 from boto.s3.connection import Location
 
@@ -23,7 +22,3 @@ def get_bucket(bucket_name='tests.mapthemoney.org'):
         if se.status == 404:
             return conn.create_bucket(bucket_name,
                                       location=Location.EU)
-
-
-def make_engine():
-    return create_engine('sqlite://')

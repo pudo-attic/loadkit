@@ -2,10 +2,9 @@ import boto
 from moto import mock_s3
 from datetime import date
 
-from loadkit import PackageIndex, extract, transform, load
+from loadkit import PackageIndex, extract, transform
 from loadkit.tests.util import CSV_FIXTURE, CSV_URL
 from loadkit.tests.util import GPC_FIXTURE
-from loadkit.tests.util import make_engine
 
 
 @mock_s3
@@ -68,11 +67,3 @@ def test_parse_with_dates():
     recs = list(artifact.records())
     assert len(recs) == 23, len(recs)
     assert isinstance(recs[0]['transaction_date'], date)
-
-    engine = make_engine()
-    table = load.table(engine, artifact)
-    assert len(table.columns) == 6, len(table.columns)
-
-
-
-

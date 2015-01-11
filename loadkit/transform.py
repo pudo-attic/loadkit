@@ -137,7 +137,7 @@ def to_table(resource, name):
         num_rows, fields = parse_table(row_set, save)
 
     log.info("Converted %s rows with %s columns.", num_rows, len(fields))
-    package.manifest['fields'] = fields
-    package.manifest['num_records'] = num_rows
-    package.save()
+    artifact.meta['fields'] = fields
+    artifact.meta['num_records'] = num_rows
+    artifact.meta.save()
     return artifact

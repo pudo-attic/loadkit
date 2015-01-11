@@ -1,7 +1,5 @@
-from sqlalchemy import create_engine
-
 from loadkit.tests.util import get_bucket, CSV_FIXTURE, CSV_URL # noqa
-from loadkit import PackageIndex, extract, transform, load
+from loadkit import PackageIndex, extract, transform
 
 
 # Connect to a package index on an S3 bucket:
@@ -11,22 +9,15 @@ index = PackageIndex(get_bucket())
 package = index.create()
 
 # load a resource from the local file system:
-resource = extract.from_file(package, CSV_FIXTURE)
-print 'Resource uploaded:', resource
+source = extract.from_file(package, CSV_FIXTURE)
+print 'Source uploaded:', source
 
 # or:
 # resource = extract.from_url(package, CSV_URL)
 
 # Transform the uploaded file into a well-understood
 # format (an ``Artifact``):
-artifact = transform.resource_to_table(resource, 'table')
+artifact = transform.to_table(source, 'table')
 print 'Artifact generated:', artifact
 
-# Load into a database:
-engine = create_engine('sqlite:///output.sqlite3')
-
-# This will generate a table matching the columns of the
-# artifact:
-table = load.table(engine, artifact)
-
-# TODO: Feed ``table`` into cubes :)
+# In your library: load the artifact into the table.
