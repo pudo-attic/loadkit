@@ -5,18 +5,17 @@ from datetime import datetime, date
 
 
 def make_secure_filename(source):
-    source = os.path.basename(source)
+    if source:
+        source = os.path.basename(source).strip()
+    source = source or 'source'
     fn, ext = os.path.splitext(source)
     ext = ext or '.raw'
-    return slugify(fn) + ext
+    ext = ext.lower().strip().replace('.', '')
+    return source, slugify(fn), ext
 
 
-def guess_extension(manifest):
-    source_file = manifest.get('source_file', '')
-    _, ext = os.path.splitext(source_file)
-    if not len(ext):
-        source_url = manifest.get('source_url', '')
-        _, ext = os.path.splitext(source_url)
+def guess_extension(name):
+    _, ext = os.path.splitext(name or '')
     return ext.replace('.', '').lower().strip()
             
 

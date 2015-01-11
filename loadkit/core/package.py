@@ -21,13 +21,18 @@ class Package(object):
         self._keys = {}
 
     def get_key(self, name):
-        if name not in self._keys:
+        if not self._keys.get(name):
             key_name = os.path.join(self.PREFIX, self.id, name)
             key = self.bucket.get_key(key_name)
             if key is None:
                 key = self.bucket.new_key(key_name)
             self._keys[name] = key
         return self._keys[name]
+
+    def has(self, cls, name):
+        name = os.path.join(self.PREFIX, self.id, cls.GROUP, name)
+        self._keys[name] = self.bucket.get_key(name)
+        return bool(self._keys[name])
 
     def _iter_resources(self, cls, *extra):
         prefix = os.path.join(self.PREFIX, self.id, cls.GROUP, *extra)
