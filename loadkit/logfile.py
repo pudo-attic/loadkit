@@ -32,8 +32,9 @@ def capture(package, prefix, modules=[], level=logging.DEBUG):
     handler.setFormatter(formatter)
     modules = set(modules + ['loadkit'])
 
-    for module in modules:
-        logger = logging.getLogger(module)
+    for logger in modules:
+        if not hasattr(logger, 'addHandler'):
+            logger = logging.getLogger(logger)
         logger.setLevel(level=level)
         logger.addHandler(handler)
 
@@ -42,7 +43,7 @@ def capture(package, prefix, modules=[], level=logging.DEBUG):
 
 def load(package, prefix, offset=0, limit=1000):
     """ Load lines from the log file with pagination support. """
-    logs = package.logfiles(prefix)
+    logs = package.logfiles(unicode(prefix))
     logs = sorted(logs, key=lambda l: l.name)
     seen = 0
     tmp = tempfile.NamedTemporaryFile(suffix='.log')
