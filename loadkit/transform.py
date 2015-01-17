@@ -9,7 +9,7 @@ from messytables import any_tableset, type_guess
 from messytables import types_processor, headers_guess
 from messytables import headers_processor, offset_processor
 
-from loadkit.core import Artifact
+from loadkit.artifact import Artifact
 from loadkit.util import guess_extension
 
 log = logging.getLogger(__name__)

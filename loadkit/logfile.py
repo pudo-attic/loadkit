@@ -1,10 +1,21 @@
 import time
 import logging
 import tempfile
+import shutil
 
-from loadkit.core import LogFile
+from barn import Resource
 
 FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+
+class LogFile(Resource):
+    """ A log file is a snippet of Python logging, preserved in the
+    bucket. """
+
+    GROUP = 'logs'
+    
+    def __repr__(self):
+        return '<LogFile(%r)>' % self.name
 
 
 class LogFileHandler(logging.FileHandler):
@@ -48,7 +59,7 @@ def load(package, prefix, offset=0, limit=1000):
     seen = 0
     tmp = tempfile.NamedTemporaryFile(suffix='.log')
     for log in logs:
-        log.key.get_contents_to_file(tmp)
+        shutil.copyfileobj(log.fh(), tmp)
         tmp.seek(0)
         for line in tmp:
             seen += 1

@@ -1,17 +1,6 @@
 import os
 from decimal import Decimal
-from slugify import slugify
 from datetime import datetime, date
-
-
-def make_secure_filename(source):
-    if source:
-        source = os.path.basename(source).strip()
-    source = source or 'source'
-    fn, ext = os.path.splitext(source)
-    ext = ext or '.raw'
-    ext = ext.lower().strip().replace('.', '')
-    return source, slugify(fn), ext
 
 
 def guess_extension(name):

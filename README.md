@@ -1,5 +1,7 @@
 # LoadKit
 
+[![Build Status](https://travis-ci.org/pudo/loadkit.png?branch=master)](https://travis-ci.org/pudo/loadkit)
+
 LoadKit is a simple Python-based ETL framework inspired by a discussion about the [OpenSpending](http://openspending.org) data warehouse platform.
 
 It is intended to accept tabular input files, such as CSV files, Excel spreadsheets and [other formats](https://messytables.readthedocs.org/). The data is uploaded to an S3 bucket together with a JSON metadata file.

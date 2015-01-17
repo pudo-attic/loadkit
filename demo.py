@@ -1,12 +1,12 @@
 from loadkit.tests.util import get_bucket, CSV_FIXTURE, CSV_URL # noqa
-from loadkit import PackageIndex, extract, transform
+from loadkit import create, extract, transform
 
 
 # Connect to a package index on an S3 bucket:
-index = PackageIndex(get_bucket())
+collection = create('file', path='~/tmp/test')
 
 # create a new package within that index:
-package = index.create()
+package = collection.create()
 
 # load a resource from the local file system:
 source = extract.from_file(package, CSV_FIXTURE)

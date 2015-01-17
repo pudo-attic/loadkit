@@ -1,9 +1,10 @@
 import logging
 import json
 import tempfile
+import shutil
 from contextlib import contextmanager
 
-from loadkit.core.resource import Resource
+from barn import Resource
 from loadkit.util import json_default, json_hook
 
 log = logging.getLogger(__name__)
@@ -30,8 +31,8 @@ class Artifact(Resource):
             yield write
 
             output.seek(0)
-            log.info("Uploading generated artifact to S3 (%r)...", self.key)
-            self.key.set_contents_from_file(output)
+            log.info("Uploading generated artifact (%r)...", self._obj)
+            self.save_file(output.name, destructive=True)
         finally:
             output.close()
 
@@ -39,8 +40,8 @@ class Artifact(Resource):
         """ Get each record that has been stored in the table. """
         output = tempfile.NamedTemporaryFile(suffix='.json')
         try:
-            log.info("Loading artifact from S3 (%r)...", self.key)
-            self.key.get_contents_to_file(output)
+            log.info("Loading artifact from (%r)...", self._obj)
+            shutil.copyfileobj(self.fh(), output)
             output.seek(0)
 
             for line in output.file:

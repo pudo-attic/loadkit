@@ -1,1 +1,2 @@
-from loadkit.core import PackageIndex, Source, Artifact # noqa
+from barn import create, Collection, Source # noqa
+from loadkit.artifact import Artifact # noqa

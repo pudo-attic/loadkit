@@ -26,14 +26,16 @@ setup(
     zip_safe=False,
     install_requires=[
         'SQLAlchemy>=0.9.8',
-        'boto>=2.34.0',
-        'moto>=0.3.9',
         'messytables>=0.2.1',
         'requests>=2.5.1',
-        'python-slugify>=0.1.0'
+        'barn>=0.2'
     ],
     tests_require=[],
     entry_points={
-        'console_scripts': []
+        'console_scripts': [],
+        'barn.resource_types': [
+            'artifact = loadkit.artifact:Artifact',
+            'logfile = loadkit.logfile:LogFile'
+        ],
     }
 )
