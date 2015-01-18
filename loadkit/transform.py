@@ -24,7 +24,7 @@ def resource_row_set(package, resource):
     
     # This is a work-around because messytables hangs on boto file
     # handles, so we're doing it via plain old HTTP.
-    table_set = any_tableset(urlopen(resource.url),
+    table_set = any_tableset(resource.fh(),
                              extension=resource.meta.get('extension'),
                              mimetype=resource.meta.get('mime_type'))
     tables = list(table_set.tables)

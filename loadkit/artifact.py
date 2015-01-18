@@ -34,7 +34,10 @@ class Artifact(Resource):
             log.info("Uploading generated artifact (%r)...", self._obj)
             self.save_file(output.name, destructive=True)
         finally:
-            output.close()
+            try:
+                output.close()
+            except:
+                pass
 
     def records(self):
         """ Get each record that has been stored in the table. """
@@ -48,7 +51,10 @@ class Artifact(Resource):
                 yield json.loads(line, object_hook=json_hook)
         
         finally:
-            output.close()
+            try:
+                output.close()
+            except:
+                pass
 
     def __repr__(self):
         return '<Artifact(%r)>' % self.name

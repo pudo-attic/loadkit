@@ -32,7 +32,7 @@ class LogFileHandler(logging.FileHandler):
         name = '%s/%s.log' % (self.prefix, int(time.time() * 1000))
         logfile = LogFile(self.package, name)
         self.tmp.seek(0)
-        logfile.key.set_contents_from_file(self.tmp)
+        logfile.save_fileobj(self.tmp)
 
 
 def capture(package, prefix, modules=[], level=logging.DEBUG):
@@ -54,7 +54,7 @@ def capture(package, prefix, modules=[], level=logging.DEBUG):
 
 def load(package, prefix, offset=0, limit=1000):
     """ Load lines from the log file with pagination support. """
-    logs = package.logfiles(unicode(prefix))
+    logs = package.all(LogFile, unicode(prefix))
     logs = sorted(logs, key=lambda l: l.name)
     seen = 0
     tmp = tempfile.NamedTemporaryFile(suffix='.log')
