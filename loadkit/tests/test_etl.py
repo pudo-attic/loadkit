@@ -2,7 +2,7 @@ import boto
 from moto import mock_s3
 from datetime import date
 
-from barn import create, Source
+from barn import open_collection, Source
 from loadkit import extract, transform, Artifact
 from loadkit.tests.util import CSV_FIXTURE, CSV_URL
 from loadkit.tests.util import GPC_FIXTURE
@@ -10,7 +10,7 @@ from loadkit.tests.util import GPC_FIXTURE
 
 @mock_s3
 def test_basic_api():
-    index = create('s3', bucket_name='test.mapthemoney.org')
+    index = open_collection('test', 's3', bucket_name='test.mapthemoney.org')
     assert not len(list(index)), len(list(index))
 
     package = index.create(manifest={'test': 'value'})
@@ -24,7 +24,7 @@ def test_basic_api():
 
 @mock_s3
 def test_extract_file():
-    index = create('s3', bucket_name='test.mapthemoney.org')
+    index = open_collection('test', 's3', bucket_name='test.mapthemoney.org')
     package = index.create()
     src = extract.from_file(package, CSV_FIXTURE)
     assert src is not None, src
@@ -40,7 +40,7 @@ def test_extract_file():
 
 @mock_s3
 def test_extract_url():
-    index = create('s3', bucket_name='test.mapthemoney.org')
+    index = open_collection('test', 's3', bucket_name='test.mapthemoney.org')
     package = index.create()
     src = extract.from_url(package, CSV_URL)
     assert src is not None, src
@@ -50,7 +50,7 @@ def test_extract_url():
 
 @mock_s3
 def test_parse_with_dates():
-    index = create('s3', bucket_name='test.mapthemoney.org')
+    index = open_collection('test', 's3', bucket_name='test.mapthemoney.org')
     package = index.create()
     src = extract.from_file(package, GPC_FIXTURE)
     artifact = transform.to_table(src, 'table')
