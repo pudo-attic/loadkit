@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='loadkit',
-    version='0.0.1',
+    version='0.2',
     description="Light-weight tools for ETL",
     long_description="",
     classifiers=[
