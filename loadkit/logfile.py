@@ -25,6 +25,8 @@ class LogFileHandler(logging.FileHandler):
         self.package = package
         self.prefix = prefix
         self.tmp = tempfile.NamedTemporaryFile()
+        # to be reopened by the super class
+        self.tmp.close()
         super(LogFileHandler, self).__init__(self.tmp.name)
 
     def archive(self):
