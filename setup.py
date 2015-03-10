@@ -28,14 +28,26 @@ setup(
         'SQLAlchemy>=0.9.8',
         'messytables>=0.2.1',
         'requests>=2.5.1',
-        'archivekit>=0.5'
+        'archivekit>=0.5',
+        'click>=3.2',
+        'normality>=0.1'
     ],
     tests_require=[],
     entry_points={
-        'console_scripts': [],
         'archivekit.resource_types': [
-            'artifact = loadkit.artifact:Artifact',
-            'logfile = loadkit.logfile:LogFile'
+            'table = loadkit.types.table:Table',
+            'logfile = loadkit.types.logfile:LogFile',
+            'stage = loadkit.types.stage:Stage'
         ],
+        'loadkit.operators': [
+            'text_extract = loadkit.operators.text:TextExtractOperator',
+            'table_extract = loadkit.operators.table:TableExtractOperator',
+            'normalize = loadkit.operators.normalize:NormalizeOperator',
+            'regex = loadkit.operators.regex:RegExOperator',
+            'ingest = loadkit.operators.ingest:IngestOperator'
+        ],
+        'console_scripts': [
+            'loadkit = loadkit.cli:cli'
+        ]
     }
 )

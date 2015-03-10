@@ -1,11 +1,13 @@
-import os
 from decimal import Decimal
 from datetime import datetime, date
 
 
-def guess_extension(name):
-    _, ext = os.path.splitext(name or '')
-    return ext.replace('.', '').lower().strip()
+class LoadKitException(Exception):
+    pass
+
+
+class ConfigException(LoadKitException):
+    pass
 
 
 def json_default(obj):

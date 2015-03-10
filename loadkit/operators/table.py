@@ -1,15 +1,16 @@
-import random
+import os
 import logging
+import random
 from decimal import Decimal
 from datetime import datetime
 
-from slugify import slugify
+from normality import slugify
 from messytables import any_tableset, type_guess
 from messytables import types_processor, headers_guess
 from messytables import headers_processor, offset_processor
 
-from loadkit.artifact import Artifact
-from loadkit.util import guess_extension
+from loadkit.types.table import Table
+from loadkit.operators.common import TransformOperator
 
 log = logging.getLogger(__name__)
 
@@ -17,10 +18,6 @@ log = logging.getLogger(__name__)
 def resource_row_set(package, resource):
     """ Generate an iterator over all the rows in this resource's
     source data. """
-    # Try to gather information about the source file type.
-    if not resource.meta.get('extension'):
-        resource.meta['extension'] = guess_extension(resource.meta.get('name'))
-
     # This is a work-around because messytables hangs on boto file
     # handles, so we're doing it via plain old HTTP.
     table_set = any_tableset(resource.fh(),
@@ -35,7 +32,7 @@ def resource_row_set(package, resource):
 
 def column_alias(cell, names):
     """ Generate a normalized version of the column name. """
-    column = slugify(cell.column or '', separator='_')
+    column = slugify(cell.column or '', sep='_')
     column = column.strip('_')
     column = 'column' if not len(column) else column
     name, i = column, 2
@@ -126,18 +123,18 @@ def parse_table(row_set, save_func):
     return num_rows, fields
 
 
-def to_table(resource, name):
-    """ Store a parsed version of the package resource. """
-    package = resource.package
-    artifact = Artifact(package, name)
-    artifact.meta.update(resource.meta)
+class TableExtractOperator(TransformOperator):
 
-    with artifact.store() as save:
-        row_set = resource_row_set(package, resource)
-        num_rows, fields = parse_table(row_set, save)
+    DEFAULT_TARGET = os.path.join(Table.GROUP, 'table.json')
 
-    log.info("Converted %s rows with %s columns.", num_rows, len(fields))
-    artifact.meta['fields'] = fields
-    artifact.meta['num_records'] = num_rows
-    artifact.meta.save()
-    return artifact
+    def transform(self, source, target):
+        target.meta.update(source.meta)
+
+        with target.store() as save:
+            row_set = resource_row_set(source.package, source)
+            num_rows, fields = parse_table(row_set, save)
+
+        log.info("Converted %s rows with %s columns.", num_rows, len(fields))
+        target.meta['fields'] = fields
+        target.meta['num_records'] = num_rows
+        target.meta.save()

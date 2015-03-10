@@ -1,6 +1,6 @@
 # LoadKit
 
-[![Build Status](https://travis-ci.org/pudo/loadkit.png?branch=master)](https://travis-ci.org/pudo/loadkit) [![Coverage Status](https://coveralls.io/repos/pudo/loadkit/badge.svg)](https://coveralls.io/r/pudo/loadkit)
+** This is the original README for LoadKit. Its purpose has changed significantly since then. **
 
 LoadKit is a simple Python-based ETL framework inspired by a discussion about the [OpenSpending](http://openspending.org) data warehouse platform.
 

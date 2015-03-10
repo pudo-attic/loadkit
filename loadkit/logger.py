@@ -3,19 +3,9 @@ import logging
 import tempfile
 import shutil
 
-from archivekit import Resource
+from loadkit.types.logfile import LogFile
 
 FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-
-
-class LogFile(Resource):
-    """ A log file is a snippet of Python logging, preserved in the
-    bucket. """
-
-    GROUP = 'logs'
-
-    def __repr__(self):
-        return '<LogFile(%r)>' % self.name
 
 
 class LogFileHandler(logging.FileHandler):

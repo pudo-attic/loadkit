@@ -1,0 +1,20 @@
+config:
+    collections:
+        dev:
+            type: file
+            path: /Users/fl/Code/loadkit/demo-data
+
+generate:
+    docs:
+        operator: ingest
+        source: /Users/fl/Code/icij-asx/data/ann
+
+process:
+    text:
+        operator: text_extract
+
+    normalize:
+        operator: normalize
+        requires: text
+        lowercase: True
+        collapse: True
