@@ -6,7 +6,7 @@ from datetime import datetime, date
 def guess_extension(name):
     _, ext = os.path.splitext(name or '')
     return ext.replace('.', '').lower().strip()
-            
+
 
 def json_default(obj):
     if isinstance(obj, datetime):

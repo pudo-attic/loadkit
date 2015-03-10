@@ -4,7 +4,7 @@ import tempfile
 import shutil
 from contextlib import contextmanager
 
-from barn import Resource
+from archivekit import Resource
 from loadkit.util import json_default, json_hook
 
 log = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ class Artifact(Resource):
     documents). """
 
     GROUP = 'artifacts'
-    
+
     @contextmanager
     def store(self):
         """ Create a context manager to store records in the cleaned
@@ -49,7 +49,7 @@ class Artifact(Resource):
 
             for line in output.file:
                 yield json.loads(line, object_hook=json_hook)
-        
+
         finally:
             try:
                 output.close()

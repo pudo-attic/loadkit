@@ -2,7 +2,7 @@ import boto
 from moto import mock_s3
 from datetime import date
 
-from barn import open_collection, Source
+from archivekit import open_collection, Source
 from loadkit import extract, transform, Artifact
 from loadkit.tests.util import CSV_FIXTURE, CSV_URL
 from loadkit.tests.util import GPC_FIXTURE

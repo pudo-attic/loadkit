@@ -3,7 +3,7 @@ import logging
 import tempfile
 import shutil
 
-from barn import Resource
+from archivekit import Resource
 
 FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
@@ -13,7 +13,7 @@ class LogFile(Resource):
     bucket. """
 
     GROUP = 'logs'
-    
+
     def __repr__(self):
         return '<LogFile(%r)>' % self.name
 

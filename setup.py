@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='loadkit',
-    version='0.2',
+    version='0.3',
     description="Light-weight tools for ETL",
     long_description="",
     classifiers=[
@@ -28,12 +28,12 @@ setup(
         'SQLAlchemy>=0.9.8',
         'messytables>=0.2.1',
         'requests>=2.5.1',
-        'barn>=0.2'
+        'archivekit>=0.5'
     ],
     tests_require=[],
     entry_points={
         'console_scripts': [],
-        'barn.resource_types': [
+        'archivekit.resource_types': [
             'artifact = loadkit.artifact:Artifact',
             'logfile = loadkit.logfile:LogFile'
         ],
