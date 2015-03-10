@@ -16,6 +16,12 @@ log = logging.getLogger(__name__)
 
 
 class Pipeline(object):
+    """ A pipeline is defined by a set of operators which are
+    executed in a given sequence based on their mutual
+    dependencies. The whole pipeline consists of three main 
+    phases: one, in which packages are generated, the second,
+    in which packages are transformed, and the third, in which
+    final tasks are performed. """
 
     def __init__(self, collection, name, config=None):
         self.config = dict()

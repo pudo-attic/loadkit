@@ -124,6 +124,11 @@ def parse_table(row_set, save_func):
 
 
 class TableExtractOperator(TransformOperator):
+    """ This operator will extract tabular data from the source
+    file in a package. It recognizes a variety of source formats,
+    including CSV, Excel, etc. The operator will convert them to
+    a line-based JSON format which can be easily serialized and 
+    deserialized. """
 
     DEFAULT_TARGET = os.path.join(Table.GROUP, 'table.json')
 

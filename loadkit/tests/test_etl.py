@@ -3,7 +3,10 @@ from moto import mock_s3
 from datetime import date
 
 from archivekit import open_collection, Source
-from loadkit import extract, transform, Artifact
+from loadkit import extract
+from loadkit.pipeline import Pipeline
+from loadkit.types.table import Table
+from loadkit.operators.table import TableExtractOperator
 from loadkit.tests.util import CSV_FIXTURE, CSV_URL
 from loadkit.tests.util import GPC_FIXTURE
 
@@ -32,7 +35,7 @@ def test_extract_file():
     sources = list(package.all(Source))
     assert len(sources) == 1, sources
 
-    artifacts = list(package.all(Artifact))
+    artifacts = list(package.all(Table))
     assert len(artifacts) == 0, artifacts
 
     assert 'barnet-2009.csv' in src.path, src
@@ -52,10 +55,20 @@ def test_extract_url():
 def test_parse_with_dates():
     index = open_collection('test', 's3', bucket_name='test.mapthemoney.org')
     package = index.create()
-    src = extract.from_file(package, GPC_FIXTURE)
-    artifact = transform.to_table(src, 'table')
+    extract.from_file(package, GPC_FIXTURE)
+    pipeline = Pipeline(index, 'foo', {
+        'process': {
+            'table': {
+                'operator': 'table_extract'
+            }
+        }
+    })
+    pipeline.process_package(package)
 
-    assert artifact.name == 'table'
+    artifacts = list(package.all(Table))
+    assert len(artifacts) == 1, artifacts
+    artifact = artifacts[0]
+    assert artifact.name == 'table.json'
     recs = list(artifact.records())
     assert len(recs) == 23, len(recs)
     assert isinstance(recs[0]['transaction_date'], date)

@@ -4,6 +4,8 @@ log = logging.getLogger(__name__)
 
 
 class Operator(object):
+    """ A simple operator, working on a particular package or 
+    generating packages through an ingest process. """
 
     def __init__(self, pipeline, name, config):
         self.pipeline = pipeline
@@ -28,7 +30,11 @@ class Operator(object):
 
 
 class SourceOperator(Operator):
-    
+    """ An operator which has an input resource which must exist
+    in order for it to run. The resource name is given as a class
+    constant, and when transforming, the resource is passed into
+    a ``analyze`` function which must be subclassed. """
+
     DEFAULT_SOURCE = None
 
     def analyze(self, source):
@@ -53,6 +59,10 @@ class SourceOperator(Operator):
 
 
 class TransformOperator(SourceOperator):
+    """ Similar to the ``SourceOperator``, this operator transforms
+    a given resource into another resource. Both resource names are
+    given as constants to subclasses, and passed into the
+    ``transform()`` method, which must be sub-classed. """
 
     DEFAULT_TARGET = None
 
