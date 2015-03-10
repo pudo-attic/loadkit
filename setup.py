@@ -24,6 +24,7 @@ setup(
     package_data={},
     include_package_data=True,
     zip_safe=False,
+    test_suite='nose.collector',
     install_requires=[
         'SQLAlchemy>=0.9.8',
         'messytables>=0.2.1',
