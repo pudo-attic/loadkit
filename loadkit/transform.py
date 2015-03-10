@@ -2,7 +2,6 @@ import random
 import logging
 from decimal import Decimal
 from datetime import datetime
-from urllib import urlopen
 
 from slugify import slugify
 from messytables import any_tableset, type_guess
@@ -21,7 +20,7 @@ def resource_row_set(package, resource):
     # Try to gather information about the source file type.
     if not resource.meta.get('extension'):
         resource.meta['extension'] = guess_extension(resource.meta.get('name'))
-    
+
     # This is a work-around because messytables hangs on boto file
     # handles, so we're doing it via plain old HTTP.
     table_set = any_tableset(resource.fh(),
