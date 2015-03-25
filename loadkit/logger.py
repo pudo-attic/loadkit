@@ -23,8 +23,8 @@ class LogFileHandler(logging.FileHandler):
         self.close()
         name = '%s/%s.log' % (self.prefix, int(time.time() * 1000))
         logfile = LogFile(self.package, name)
-        self.tmp.seek(0)
-        logfile.save_fileobj(self.tmp)
+        with open(self.tmp.name, 'rb') as fh:
+            logfile.save_fileobj(fh)
 
 
 def capture(package, prefix, modules=[], level=logging.DEBUG):
