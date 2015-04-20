@@ -5,7 +5,9 @@ import shutil
 
 from loadkit.types.logfile import LogFile
 
-FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+SEP = '-||-'
+FORMAT = '%%(asctime)s %s %%(name)s %s %%(levelname)s %s %%(message)s' % \
+    (SEP, SEP, SEP)
 
 
 class LogFileHandler(logging.FileHandler):
@@ -47,19 +49,29 @@ def capture(package, prefix, modules=[], level=logging.DEBUG):
 def load(package, prefix, offset=0, limit=1000):
     """ Load lines from the log file with pagination support. """
     logs = package.all(LogFile, unicode(prefix))
-    logs = sorted(logs, key=lambda l: l.name)
+    logs = sorted(logs, key=lambda l: l.name, reverse=True)
     seen = 0
+    record = None
     tmp = tempfile.NamedTemporaryFile(suffix='.log')
     for log in logs:
         shutil.copyfileobj(log.fh(), tmp)
         tmp.seek(0)
-        for line in tmp:
+        for line in reversed(list(tmp)):
             seen += 1
             if seen < offset:
                 continue
             if seen > limit:
                 tmp.close()
                 return
-            yield line
+            try:
+                d, mo, l, m = line.split(' %s ' % SEP, 4)
+                if record is not None:
+                    yield record
+                record = {'time': d, 'module': mo, 'level': l, 'message': m}
+            except ValueError:
+                if record is not None:
+                    record['message'] += '\n' + line
         tmp.seek(0)
     tmp.close()
+    if record is not None:
+        yield record
