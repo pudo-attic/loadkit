@@ -31,7 +31,7 @@ class Table(Resource):
             yield write
 
             output.seek(0)
-            log.info("Uploading generated table (%r)...", self._obj)
+            log.info("Uploading generated table (%s)...", self._obj)
             self.save_file(output.name, destructive=True)
         finally:
             try:
@@ -43,7 +43,7 @@ class Table(Resource):
         """ Get each record that has been stored in the table. """
         output = tempfile.NamedTemporaryFile(suffix='.json')
         try:
-            log.info("Loading table from (%r)...", self._obj)
+            log.info("Loading table from (%s)...", self._obj)
             shutil.copyfileobj(self.fh(), output)
             output.seek(0)
 
