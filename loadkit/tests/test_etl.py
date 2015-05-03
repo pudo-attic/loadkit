@@ -1,12 +1,11 @@
-import boto
 from moto import mock_s3
 from datetime import date
+from tempfile import mkdtemp
 
 from archivekit import open_collection, Source
 from loadkit import extract
 from loadkit.pipeline import Pipeline
 from loadkit.types.table import Table
-from loadkit.operators.table import TableExtractOperator
 from loadkit.tests.util import CSV_FIXTURE, CSV_URL
 from loadkit.tests.util import GPC_FIXTURE
 
@@ -41,9 +40,9 @@ def test_extract_file():
     assert 'barnet-2009.csv' in src.path, src
 
 
-@mock_s3
 def test_extract_url():
-    index = open_collection('test', 's3', bucket_name='test.mapthemoney.org')
+    path = mkdtemp()
+    index = open_collection('test', 'file', path=path)
     package = index.create()
     src = extract.from_url(package, CSV_URL)
     assert src is not None, src
