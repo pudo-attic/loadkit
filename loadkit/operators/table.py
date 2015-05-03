@@ -27,7 +27,14 @@ def resource_row_set(package, resource):
     if not len(tables):
         log.error("No tables were found in the source file.")
         return
-    return tables[0]
+
+    row_set = tables[0]
+    offset, headers = headers_guess(row_set.sample)
+    row_set.register_processor(headers_processor(headers))
+    row_set.register_processor(offset_processor(offset + 1))
+    types = type_guess(row_set.sample, strict=True)
+    row_set.register_processor(types_processor(types))
+    return row_set
 
 
 def column_alias(cell, names):
@@ -89,12 +96,6 @@ def parse_table(row_set, table):
     num_rows = 0
     fields = {}
 
-    offset, headers = headers_guess(row_set.sample)
-    row_set.register_processor(headers_processor(headers))
-    row_set.register_processor(offset_processor(offset + 1))
-    types = type_guess(row_set.sample, strict=True)
-    row_set.register_processor(types_processor(types))
-
     with table.store() as save_func:
         for i, row in enumerate(row_set):
             if not len(fields):
@@ -140,4 +141,5 @@ class TableExtractOperator(TransformOperator):
     def transform(self, source, target):
         target.meta.update(source.meta)
         row_set = resource_row_set(source.package, source)
-        parse_table(row_set, target)
+        if row_set is not None:
+            parse_table(row_set, target)
