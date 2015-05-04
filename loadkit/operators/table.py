@@ -92,41 +92,36 @@ def random_sample(value, field, row, num=10):
         field['samples'][j] = value
 
 
-def parse_table(row_set, table):
+def parse_table(row_set, save_func):
     num_rows = 0
     fields = {}
 
-    with table.store() as save_func:
-        for i, row in enumerate(row_set):
-            if not len(fields):
-                fields = generate_field_spec(row)
+    for i, row in enumerate(row_set):
+        if not len(fields):
+            fields = generate_field_spec(row)
 
-            data = {}
-            for cell, field in zip(row, fields):
-                value = cell.value
-                if isinstance(value, datetime):
-                    value = value.date()
-                if isinstance(value, Decimal):
-                    # Baby jesus forgive me.
-                    value = float(value)
-                if isinstance(value, basestring) and not len(value.strip()):
-                    value = None
-                data[field['name']] = value
-                random_sample(value, field, i)
+        data = {}
+        for cell, field in zip(row, fields):
+            value = cell.value
+            if isinstance(value, datetime):
+                value = value.date()
+            if isinstance(value, Decimal):
+                # Baby jesus forgive me.
+                value = float(value)
+            if isinstance(value, basestring) and not len(value.strip()):
+                value = None
+            data[field['name']] = value
+            random_sample(value, field, i)
 
-            check_empty = set(data.values())
-            if None in check_empty and len(check_empty) == 1:
-                continue
+        check_empty = set(data.values())
+        if None in check_empty and len(check_empty) == 1:
+            continue
 
-            save_func(data)
-            num_rows = i
+        save_func(data)
+        num_rows = i
 
     fields = {f.get('name'): f for f in fields}
-    # return num_rows, fields
-    log.info("Converted %s rows with %s columns.", num_rows, len(fields))
-    table.meta['fields'] = fields
-    table.meta['num_records'] = num_rows
-    table.meta.save()
+    return num_rows, fields
 
 
 class TableExtractOperator(TransformOperator):
@@ -140,6 +135,12 @@ class TableExtractOperator(TransformOperator):
 
     def transform(self, source, target):
         target.meta.update(source.meta)
-        row_set = resource_row_set(source.package, source)
-        if row_set is not None:
-            parse_table(row_set, target)
+
+        with target.store() as save:
+            row_set = resource_row_set(source.package, source)
+            num_rows, fields = parse_table(row_set, save)
+
+        log.info("Converted %s rows with %s columns.", num_rows, len(fields))
+        target.meta['fields'] = fields
+        target.meta['num_records'] = num_rows
+        target.meta.save()
